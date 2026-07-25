@@ -162,7 +162,7 @@ Desenvolvido em TDD, fase a fase:
 - ✅ **Fase 5 — Notificações**: endpoints para consulta de notificações
 - ✅ **Fase 6 — Status/Health**: endpoint de status agregado do sistema
 - ✅ **Fase 7 — Qualidade**: 139 testes (>90% de cobertura), `mypy` e `ruff` limpos
-- 🚧 **Fase 8 — Documentação**: README completo; `ARCHITECTURE.md`/`API.md` em andamento
+- ✅ **Fase 8 — Documentação**: README completo, `ARCHITECTURE.md` e `API.md` finalizados
 
 **Fora do escopo do MVP**: frontend, deploy em nuvem, integrações de notificação (e-mail/Slack), multi-tenancy e autenticação.
 
