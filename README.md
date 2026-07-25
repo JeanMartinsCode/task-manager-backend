@@ -153,7 +153,7 @@ task-manager-backend/
 
 ## 🗺️ Status do desenvolvimento
 
-Projeto guiado por spec (`.speckit-*.md`) e desenvolvido em TDD, fase a fase:
+Desenvolvido em TDD, fase a fase:
 
 - ✅ **Fase 1 — Fundação**: setup do projeto, SQLite, Alembic, modelos (`User`, `Task`, `Notification`)
 - ✅ **Fase 2 — Usuários**: schemas, service e endpoints de usuário
@@ -168,4 +168,4 @@ Projeto guiado por spec (`.speckit-*.md`) e desenvolvido em TDD, fase a fase:
 
 ## 📄 Licença
 
-MIT
+Business Source License 1.1 (BSL 1.1) — uso comercial requer licença comercial. Uso pessoal, educacional e avaliação por recrutadores é gratuito.
