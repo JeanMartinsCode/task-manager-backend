@@ -8,12 +8,14 @@ try:
     from task_manager.database import get_db
     from task_manager.models import PriorityEnum, Task, TaskStatusEnum
     from task_manager.scheduler import get_last_run_info
+    from task_manager.security import require_api_key
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
     from src.task_manager.database import get_db
     from src.task_manager.models import PriorityEnum, Task, TaskStatusEnum
     from src.task_manager.scheduler import get_last_run_info
+    from src.task_manager.security import require_api_key
 
-router = APIRouter(tags=["status"])
+router = APIRouter(tags=["status"], dependencies=[Depends(require_api_key)])
 
 
 @router.get("/api/status")

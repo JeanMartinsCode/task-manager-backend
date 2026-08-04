@@ -83,6 +83,22 @@ Routers FastAPI finos — cada endpoint apenas valida entrada (via schema), cham
 | **Import de compatibilidade (`try: from task_manager.X / except: from src.task_manager.X`)** | Permite que os módulos sejam importados tanto como pacote instalado (`task_manager`) quanto via `src.task_manager` (como os testes fazem), sem duplicar código |
 | **Estado da última escalação em memória** (não persistido) | Simples e suficiente para o MVP; é perdido em restart, o que é aceitável pois o job roda a cada minuto |
 
+## Autenticação e Autorização
+
+**Decisão (estágio atual — MVP):** todo endpoint sob `/api/*` exige o header `X-API-Key`, validado por `security.require_api_key` (`src/task_manager/security.py`) contra a variável de ambiente `API_KEY`, usando `secrets.compare_digest` (comparação em tempo constante, evita timing attack). `/health` fica público de propósito — é a única rota sem dado algum, e probes de infraestrutura (load balancer, orquestrador) tipicamente não carregam credenciais.
+
+**Por que uma API key compartilhada, e não OAuth2/JWT já de início:** o domínio hoje não tem conceito de "usuário autenticado fazendo a requisição" — `User` é uma entidade de negócio (a quem uma `Task` é atribuída), não uma conta com login. Nenhuma rota precisa hoje saber *quem* está chamando, só que quem chama é confiável. Implementar OAuth2/JWT agora seria construir infraestrutura de login para um requisito que não existe, adicionando complexidade sem benefício real (over-engineering).
+
+**Caminho de evolução:** `require_api_key` foi isolado em `security.py` exatamente para ser substituível — quando houver necessidade real de identidade por usuário, troca-se essa dependência por uma que resolve e retorna o `User` autenticado (ex. `get_current_user` via OAuth2/JWT), mantendo a mesma forma de injeção (`Depends(...)`) nos routers. A partir daí, autorização por recurso (ex. "usuário só edita/deleta suas próprias tasks") vira uma checagem de `current_user.id == task.assigned_to` dentro do endpoint.
+
+**Débito técnico consciente — autorização por recurso:** o pentest sugeriu "usuário só edita/deleta suas próprias tasks, se esse conceito já existir no domínio". Ele não existe de forma utilizável hoje: `assigned_to` identifica a quem uma tarefa pertence *no domínio*, mas nenhuma requisição HTTP se identifica como um `User` específico (só como "um cliente com a API key"). Implementar essa checagem agora exigiria inventar uma identidade de requisição sem um mecanismo real de login por trás — autorização de fachada, não autorização de verdade. Por isso, com uma única API key compartilhada, qualquer chamador autenticado tem os mesmos privilégios que qualquer outro (não há tenant/usuário isolado). Fica registrado como próximo passo natural junto da evolução para OAuth2/JWT, quando o produto precisar de multi-tenancy real — ver [SECURITY.md](SECURITY.md).
+
+## Rate Limiting
+
+`rate_limit.py` aplica um limite por IP (via `slowapi`) nos endpoints de escrita (`POST`/`PUT`/`DELETE`), configurável pela variável `RATE_LIMIT_WRITE` (padrão `20/minute`). Endpoints de leitura (`GET`) não são limitados.
+
+**Isso é redundância, não substituto:** em um deploy de produção real, rate limiting deveria existir também (e principalmente) numa camada de gateway/proxy reverso (nginx, API gateway, Cloudflare etc.) — mais difícil de contornar e sem custo de CPU/memória da aplicação por requisição rejeitada. A camada na aplicação aqui existe para proteger deploys que ainda não têm essa camada de borda, e como segunda linha de defesa para os que já têm.
+
 ## Melhorias Futuras
 
 - Migrar `models.py` de `Column()` para `Mapped[]`/`mapped_column()` (tipagem estática nativa do SQLAlchemy 2.0, eliminaria os `# type: ignore` atuais)

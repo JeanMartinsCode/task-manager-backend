@@ -2,25 +2,34 @@
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from sqlalchemy.orm import Session
 
 try:
+    from task_manager.constants import MAX_SQLITE_INTEGER
     from task_manager.database import get_db
     from task_manager.models import PriorityEnum, TaskStatusEnum
+    from task_manager.rate_limit import RATE_LIMIT_WRITE, limiter
     from task_manager.schemas import PaginatedTaskResponse, TaskCreate, TaskRead, TaskUpdate
+    from task_manager.security import require_api_key
     from task_manager.services import TaskService
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
+    from src.task_manager.constants import MAX_SQLITE_INTEGER
     from src.task_manager.database import get_db
     from src.task_manager.models import PriorityEnum, TaskStatusEnum
+    from src.task_manager.rate_limit import RATE_LIMIT_WRITE, limiter
     from src.task_manager.schemas import PaginatedTaskResponse, TaskCreate, TaskRead, TaskUpdate
+    from src.task_manager.security import require_api_key
     from src.task_manager.services import TaskService
 
-router = APIRouter(prefix="/api/tasks", tags=["tasks"])
+router = APIRouter(
+    prefix="/api/tasks", tags=["tasks"], dependencies=[Depends(require_api_key)]
+)
 
 
 @router.post("", status_code=201, response_model=TaskRead)
-def create_task(task_in: TaskCreate, db: Session = Depends(get_db)):
+@limiter.limit(RATE_LIMIT_WRITE)
+def create_task(request: Request, task_in: TaskCreate, db: Session = Depends(get_db)):
     """Create a new task. Returns 400 if assigned_to_id does not exist."""
     try:
         task = TaskService.create_task(
@@ -42,7 +51,7 @@ def get_all_tasks(
     limit: int = Query(100, ge=1, le=100),
     status: Optional[TaskStatusEnum] = Query(None),
     priority: Optional[PriorityEnum] = Query(None),
-    assigned_to_id: Optional[int] = Query(None, ge=1),
+    assigned_to_id: Optional[int] = Query(None, ge=1, le=MAX_SQLITE_INTEGER),
     db: Session = Depends(get_db),
 ):
     """Get all tasks with optional filters and pagination."""
@@ -60,7 +69,10 @@ def get_all_tasks(
 
 
 @router.get("/{task_id}", response_model=TaskRead)
-def get_task(task_id: int, db: Session = Depends(get_db)):
+def get_task(
+    task_id: int = Path(..., ge=1, le=MAX_SQLITE_INTEGER),
+    db: Session = Depends(get_db),
+):
     """Get a task by ID. Returns 404 if not found."""
     task = TaskService.get_task(db, task_id)
     if not task:
@@ -69,7 +81,13 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{task_id}", response_model=TaskRead)
-def update_task(task_id: int, task_update: TaskUpdate, db: Session = Depends(get_db)):
+@limiter.limit(RATE_LIMIT_WRITE)
+def update_task(
+    request: Request,
+    task_update: TaskUpdate,
+    task_id: int = Path(..., ge=1, le=MAX_SQLITE_INTEGER),
+    db: Session = Depends(get_db),
+):
     """Update an existing task. Returns 404 if not found."""
     try:
         return TaskService.update_task(
@@ -88,7 +106,12 @@ def update_task(task_id: int, task_update: TaskUpdate, db: Session = Depends(get
 
 
 @router.delete("/{task_id}", status_code=204)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
+@limiter.limit(RATE_LIMIT_WRITE)
+def delete_task(
+    request: Request,
+    task_id: int = Path(..., ge=1, le=MAX_SQLITE_INTEGER),
+    db: Session = Depends(get_db),
+):
     """Delete a task. Returns 404 if not found."""
     try:
         TaskService.delete_task(db, task_id)

@@ -32,10 +32,15 @@ def stub_last_run_info(monkeypatch):
     )
 
 
+TEST_API_KEY = "test-api-key-for-pytest-only"
+
+
 @pytest.fixture
 def client():
-    """Create a test client."""
-    return TestClient(app)
+    """Create a test client, pre-authenticated with the API key."""
+    test_client = TestClient(app)
+    test_client.headers.update({"X-API-Key": TEST_API_KEY})
+    return test_client
 
 
 @pytest.fixture

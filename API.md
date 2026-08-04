@@ -4,6 +4,27 @@ Documentação interativa completa (OpenAPI/Swagger) sempre disponível em `http
 
 Todas as datas são ISO-8601 em UTC. Todos os corpos de requisição/resposta são JSON.
 
+## Considerações de Segurança
+
+### Autenticação
+
+Todo endpoint sob `/api/*` exige o header `X-API-Key` (veja ARCHITECTURE.md). `/health` é a única rota pública.
+
+### Conteúdo armazenado sem sanitização (XSS)
+
+`name`, `email`, `title` e `description` são armazenados e devolvidos **exatamente como enviados**, sem escapar ou remover HTML/JavaScript. Um payload como `<script>alert(1)</script>` em `title` é persistido e volta assim no JSON de `GET /api/tasks/{id}`.
+
+Isso é intencional, não um descuido: a API não sabe (nem deveria precisar saber) em que contexto cada consumidor vai renderizar esse texto. Filtrar/bloquear tags na entrada:
+
+- destruiria dados legítimos (ex.: uma tarefa cujo título é literalmente "corrigir a tag `<script>` do header.html"), e
+- daria uma falsa sensação de segurança — qualquer filtro de blocklist é contornável, e o problema real de XSS só existe se e quando um cliente renderiza esse texto como HTML sem escapar.
+
+**Responsabilidade do consumidor:** qualquer frontend (ou outro serviço) que renderize `name`, `email`, `title` ou `description` como HTML **deve escapar o conteúdo no momento da renderização** (ex.: interpolação seguro do framework — JSX, `{{ }}` do Vue/Angular com auto-escape, `textContent` em vez de `innerHTML`, ou uma função de escape explícita se montando HTML manualmente). Nunca usar `innerHTML`/`v-html`/`dangerouslySetInnerHTML` direto com esses campos.
+
+### Null bytes
+
+Os mesmos campos de texto livre rejeitam `\x00` (null byte) com `422` — não é sobre XSS, mas evita corromper logs, exports CSV e integrações downstream que tratam strings como C-strings.
+
 ## Códigos de erro
 
 | Código | Quando acontece |
