@@ -5,13 +5,12 @@ This module validates that SQLAlchemy models are correctly defined with proper
 fields, types, constraints, and relationships.
 """
 
-import sys
-from pathlib import Path
+from src.task_manager.database import Base
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from task_manager.database import Base
+try:
+    from task_manager.models import Notification, Task, User
+except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
+    from src.task_manager.models import Notification, Task, User
 
 
 class TestModelImports:
@@ -19,9 +18,6 @@ class TestModelImports:
 
     def test_models_can_be_imported(self) -> None:
         """Verify that all core models exist and are importable."""
-        # Import models
-        from task_manager.models import Notification, Task, User
-
         # Assert that each model class exists and is not None
         assert User is not None, "User model should be importable"
         assert Task is not None, "Task model should be importable"
@@ -38,8 +34,6 @@ class TestUserModel:
 
     def test_user_model_has_required_fields(self) -> None:
         """Verify User model has all required fields: id, name, email, created_at."""
-        from task_manager.models import User
-
         # Check that User has __table__ attribute (SQLAlchemy mapped table)
         assert hasattr(User, "__table__"), "User should be a SQLAlchemy model"
 
@@ -54,8 +48,6 @@ class TestUserModel:
 
     def test_user_model_field_types(self) -> None:
         """Verify User model fields have correct types."""
-        from task_manager.models import User
-
         # Get columns by name for type checking
         columns = {col.name: col for col in User.__table__.columns}
 
@@ -92,8 +84,6 @@ class TestTaskModel:
 
     def test_task_model_has_required_fields(self) -> None:
         """Verify Task model has all required fields."""
-        from task_manager.models import Task
-
         # Check that Task has __table__ attribute
         assert hasattr(Task, "__table__"), "Task should be a SQLAlchemy model"
 
@@ -113,8 +103,6 @@ class TestTaskModel:
 
     def test_task_model_priority_and_status_are_enums(self) -> None:
         """Verify Task model priority and status fields use Enum type."""
-        from task_manager.models import Task
-
         columns = {col.name: col for col in Task.__table__.columns}
 
         # Assert priority is Enum type
@@ -133,8 +121,6 @@ class TestTaskModel:
 
     def test_task_model_assigned_to_is_foreign_key(self) -> None:
         """Verify Task model assigned_to is a foreign key pointing to User."""
-        from task_manager.models import Task
-
         columns = {col.name: col for col in Task.__table__.columns}
 
         # Assert assigned_to has a foreign key constraint
@@ -157,8 +143,6 @@ class TestNotificationModel:
 
     def test_notification_model_has_required_fields(self) -> None:
         """Verify Notification model has all required fields."""
-        from task_manager.models import Notification
-
         # Check that Notification has __table__ attribute
         assert hasattr(
             Notification, "__table__"
@@ -178,8 +162,6 @@ class TestNotificationModel:
 
     def test_notification_task_id_is_foreign_key(self) -> None:
         """Verify Notification model task_id is a foreign key pointing to Task."""
-        from task_manager.models import Notification
-
         columns = {col.name: col for col in Notification.__table__.columns}
 
         # Assert task_id has a foreign key constraint
@@ -207,8 +189,6 @@ class TestModelRelationships:
 
     def test_user_has_tasks_relationship(self) -> None:
         """Verify User model has a relationship to Task."""
-        from task_manager.models import User
-
         # Assert that User has a 'tasks' relationship attribute
         assert hasattr(
             User, "tasks"
@@ -228,8 +208,6 @@ class TestModelRelationships:
 
     def test_task_has_notifications_relationship(self) -> None:
         """Verify Task model has a relationship to Notification."""
-        from task_manager.models import Task
-
         # Assert that Task has a 'notifications' relationship attribute
         assert hasattr(
             Task, "notifications"
@@ -249,8 +227,6 @@ class TestModelRelationships:
 
     def test_task_has_assigned_user_relationship(self) -> None:
         """Verify Task model has a relationship to User (assigned_user)."""
-        from task_manager.models import Task
-
         # Assert that Task has a relationship to User (usually named 'assigned_user')
         has_user_relation = (
             hasattr(Task, "assigned_user")
@@ -283,8 +259,6 @@ class TestModelRelationships:
 
     def test_notification_has_task_relationship(self) -> None:
         """Verify Notification model has a relationship to Task."""
-        from task_manager.models import Notification
-
         # Assert that Notification has a 'task' relationship attribute
         assert hasattr(
             Notification, "task"

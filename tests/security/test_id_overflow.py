@@ -46,14 +46,6 @@ def setup_and_teardown_db():
 
 
 @pytest.fixture
-def client():
-    """Create a test client, pre-authenticated with the API key."""
-    test_client = TestClient(app)
-    test_client.headers.update({"X-API-Key": TEST_API_KEY})
-    return test_client
-
-
-@pytest.fixture
 def db_session():
     """Provide a database session for setup."""
     connection = engine.connect()

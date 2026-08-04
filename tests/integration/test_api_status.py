@@ -3,10 +3,8 @@
 from datetime import datetime, timedelta
 
 import pytest
-from fastapi.testclient import TestClient
 
 from src.task_manager.database import Base, SessionLocal, engine
-from src.task_manager.main import app
 
 try:
     from task_manager.api import status as status_module
@@ -30,17 +28,6 @@ def stub_last_run_info(monkeypatch):
     monkeypatch.setattr(
         status_module, "get_last_run_info", lambda: {"timestamp": None, "escalated_count": 0}
     )
-
-
-TEST_API_KEY = "test-api-key-for-pytest-only"
-
-
-@pytest.fixture
-def client():
-    """Create a test client, pre-authenticated with the API key."""
-    test_client = TestClient(app)
-    test_client.headers.update({"X-API-Key": TEST_API_KEY})
-    return test_client
 
 
 @pytest.fixture

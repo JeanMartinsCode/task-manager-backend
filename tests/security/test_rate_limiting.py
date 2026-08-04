@@ -18,12 +18,8 @@ other tests sharing the same in-process app/limiter singleton.
 """
 
 import pytest
-from fastapi.testclient import TestClient
 
 from src.task_manager.database import Base, engine
-from src.task_manager.main import app
-
-TEST_API_KEY = "test-api-key-for-pytest-only"
 
 
 @pytest.fixture(autouse=True)
@@ -32,14 +28,6 @@ def setup_and_teardown_db():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
-
-
-@pytest.fixture
-def client():
-    """Create a test client, pre-authenticated with the API key."""
-    test_client = TestClient(app)
-    test_client.headers.update({"X-API-Key": TEST_API_KEY})
-    return test_client
 
 
 def test_create_user_is_throttled_after_configured_limit(client):

@@ -83,7 +83,7 @@ class TaskCreate(BaseModel):
         default=PriorityEnum.MEDIUM, description="Task priority level"
     )
     assigned_to_id: int = Field(
-        ..., gt=0, le=MAX_SQLITE_INTEGER, description="User ID to assign task to"
+        ..., ge=1, le=MAX_SQLITE_INTEGER, description="User ID to assign task to"
     )
 
     @field_validator("title", "description")

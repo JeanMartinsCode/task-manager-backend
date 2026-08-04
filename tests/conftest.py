@@ -15,15 +15,19 @@ import pytest  # noqa: E402
 
 
 @pytest.fixture
-def test_client():
-    """Provide a TestClient for FastAPI testing, pre-authenticated with the API key."""
+def client():
+    """Provide a TestClient for FastAPI testing, pre-authenticated with the API key.
+
+    Shared across every test module so individual test files don't each
+    redefine the same fixture.
+    """
     from fastapi.testclient import TestClient
 
     from src.task_manager.main import app
 
-    client = TestClient(app)
-    client.headers.update({"X-API-Key": TEST_API_KEY})
-    return client
+    test_client = TestClient(app)
+    test_client.headers.update({"X-API-Key": TEST_API_KEY})
+    return test_client
 
 
 @pytest.fixture(autouse=True)

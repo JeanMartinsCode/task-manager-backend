@@ -20,17 +20,14 @@ Chosen limits (see schemas.py for the same rationale inline):
 from datetime import datetime, timedelta
 
 import pytest
-from fastapi.testclient import TestClient
 
 from src.task_manager.database import Base, SessionLocal, engine
-from src.task_manager.main import app
 
 try:
     from task_manager.models import User
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
     from src.task_manager.models import User
 
-TEST_API_KEY = "test-api-key-for-pytest-only"
 OVERSIZED_PAYLOAD = "A" * (500 * 1024)  # 500KB, matching the pentest's payload size
 
 
@@ -40,14 +37,6 @@ def setup_and_teardown_db():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
-
-
-@pytest.fixture
-def client():
-    """Create a test client, pre-authenticated with the API key."""
-    test_client = TestClient(app)
-    test_client.headers.update({"X-API-Key": TEST_API_KEY})
-    return test_client
 
 
 @pytest.fixture
