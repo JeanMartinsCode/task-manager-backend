@@ -1,10 +1,14 @@
 """Tests for Alembic database migration configuration."""
 
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 import sqlalchemy
+from alembic.config import Config
+
+from alembic import command
 
 
 class TestAlembicDirectory:
@@ -97,40 +101,46 @@ class TestAlembicEnvConfiguration:
         ), f"alembic current failed: {result.stderr}"
 
 
+@pytest.fixture
+def isolated_alembic_config(tmp_path: Path) -> Config:
+    """Alembic config pointed at a throwaway script_location + database.
+
+    Revision generation must never touch the real alembic/versions/
+    directory or task_manager.db - autogenerate always writes a new
+    migration file, so running it against the real project on every test
+    run would create/delete files as a side effect of testing.
+    """
+    tmp_alembic_dir = tmp_path / "alembic"
+    shutil.copytree(
+        Path("alembic"),
+        tmp_alembic_dir,
+        ignore=shutil.ignore_patterns("versions", "__pycache__"),
+    )
+    (tmp_alembic_dir / "versions").mkdir()
+
+    # No config_file_name (unlike Config("alembic.ini")): env.py only calls
+    # fileConfig() when one is set, and that call reconfigures the process's
+    # root logger - fine for the real subprocess-isolated CLI, but it would
+    # leak into and break other tests' logging assertions if run in-process.
+    cfg = Config()
+    cfg.set_main_option("script_location", str(tmp_alembic_dir))
+    cfg.set_main_option("sqlalchemy.url", f"sqlite:///{tmp_path / 'test.db'}")
+    return cfg
+
+
 class TestAlembicMigrations:
     """Verify Alembic can generate and execute migrations."""
 
-    def test_initial_migration_can_be_generated(self) -> None:
+    def test_initial_migration_can_be_generated(
+        self, isolated_alembic_config: Config
+    ) -> None:
         """Verify alembic can generate initial migration."""
-        # Clean up database state AND migration files to avoid mismatches
-        db_file = Path("task_manager.db")
-        if db_file.exists():
-            # Close all database connections before deleting
-            from src.task_manager.database import engine
-            engine.dispose()
-            db_file.unlink()
+        command.revision(isolated_alembic_config, autogenerate=True, message="initial")
 
-        # Clean up any existing migration files
-        versions_dir = Path("alembic/versions")
-        for f in versions_dir.glob("*.py"):
-            if f.name != "__init__.py":
-                f.unlink()
-
-        # Generate initial migration
-        result = subprocess.run(
-            ["python", "-m", "alembic", "revision", "--autogenerate", "-m", "initial"],
-            capture_output=True,
-            text=True,
-            cwd=Path.cwd(),
-        )
-
-        assert result.returncode == 0, f"Migration generation failed: {result.stderr}"
-
-        # Check that a migration file was created in versions/
-        migration_files = list(versions_dir.glob("*.py"))
-
-        # Filter out __init__.py if it exists
-        migration_files = [f for f in migration_files if f.name != "__init__.py"]
+        script_location = isolated_alembic_config.get_main_option("script_location")
+        assert script_location is not None
+        versions_dir = Path(script_location) / "versions"
+        migration_files = [f for f in versions_dir.glob("*.py") if f.name != "__init__.py"]
 
         assert (
             len(migration_files) >= 1
@@ -145,16 +155,6 @@ class TestAlembicMigrations:
             from src.task_manager.database import engine
             engine.dispose()
             db_file.unlink()
-
-        # Generate initial migration
-        subprocess.run(
-            ["python", "-m", "alembic", "revision", "--autogenerate", "-m", "test_migration"],
-            capture_output=True,
-            text=True,
-            cwd=Path.cwd(),
-        )
-        # It's ok if generation fails (migration might already exist)
-        # The important part is the upgrade
 
         # Now upgrade to head
         result_upgrade = subprocess.run(
