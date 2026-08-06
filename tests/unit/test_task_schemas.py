@@ -5,12 +5,8 @@ from datetime import datetime, timedelta
 import pytest
 from pydantic import ValidationError
 
-try:
-    from task_manager.models import PriorityEnum, TaskStatusEnum
-    from task_manager.schemas import TaskCreate, TaskRead, TaskUpdate
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.models import PriorityEnum, TaskStatusEnum
-    from task_manager.schemas import TaskCreate, TaskRead, TaskUpdate
+from task_manager.models import PriorityEnum, TaskStatusEnum
+from task_manager.schemas import TaskCreate, TaskRead, TaskUpdate
 
 
 class TestTaskCreate:

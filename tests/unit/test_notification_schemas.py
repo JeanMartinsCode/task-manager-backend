@@ -5,12 +5,8 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-try:
-    from task_manager.models import NotificationTypeEnum
-    from task_manager.schemas import NotificationRead
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.models import NotificationTypeEnum
-    from task_manager.schemas import NotificationRead
+from task_manager.models import NotificationTypeEnum
+from task_manager.schemas import NotificationRead
 
 
 class TestNotificationRead:

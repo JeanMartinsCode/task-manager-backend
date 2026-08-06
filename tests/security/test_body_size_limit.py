@@ -16,12 +16,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
+from task_manager.body_limit import MAX_BODY_BYTES
 from task_manager.database import Base, engine
-
-try:
-    from task_manager.body_limit import MAX_BODY_BYTES
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.body_limit import MAX_BODY_BYTES
 
 
 @pytest.fixture(autouse=True)

@@ -5,25 +5,14 @@ from datetime import datetime, timedelta
 import pytest
 
 from task_manager.database import Base, SessionLocal, engine
-
-try:
-    from task_manager.models import (
-        Notification,
-        NotificationTypeEnum,
-        PriorityEnum,
-        Task,
-        TaskStatusEnum,
-        User,
-    )
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.models import (
-        Notification,
-        NotificationTypeEnum,
-        PriorityEnum,
-        Task,
-        TaskStatusEnum,
-        User,
-    )
+from task_manager.models import (
+    Notification,
+    NotificationTypeEnum,
+    PriorityEnum,
+    Task,
+    TaskStatusEnum,
+    User,
+)
 
 
 @pytest.fixture(autouse=True)

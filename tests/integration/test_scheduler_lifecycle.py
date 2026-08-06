@@ -2,12 +2,8 @@
 
 from fastapi.testclient import TestClient
 
-try:
-    from task_manager.main import app
-    from task_manager.scheduler import ESCALATION_JOB_ID
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.main import app
-    from task_manager.scheduler import ESCALATION_JOB_ID
+from task_manager.main import app
+from task_manager.scheduler import ESCALATION_JOB_ID
 
 
 def test_scheduler_starts_and_stops_with_app_lifespan():

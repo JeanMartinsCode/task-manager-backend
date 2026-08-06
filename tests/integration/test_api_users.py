@@ -3,11 +3,7 @@
 import pytest
 
 from task_manager.database import Base, SessionLocal, engine
-
-try:
-    from task_manager.models import User
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.models import User
+from task_manager.models import User
 
 
 @pytest.fixture(autouse=True)

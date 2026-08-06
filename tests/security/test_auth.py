@@ -13,11 +13,7 @@ from fastapi.testclient import TestClient
 
 from task_manager.database import Base, SessionLocal, engine
 from task_manager.main import app
-
-try:
-    from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
+from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
 
 TEST_API_KEY = "test-api-key-for-pytest-only"
 WRONG_API_KEY = "definitely-not-the-right-key"
