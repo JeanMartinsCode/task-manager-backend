@@ -26,7 +26,7 @@ install:
 	uv sync --all-extras
 
 run:
-	uvicorn src.task_manager.main:app --reload --host 0.0.0.0 --port 8000
+	uvicorn task_manager.main:app --reload --host 0.0.0.0 --port 8000
 
 test:
 	pytest tests/ -v
