@@ -15,6 +15,13 @@ Chosen limits (see schemas.py for the same rationale inline):
 - `description`: 2000 chars — roughly 300-400 words, enough for a
   genuinely detailed task description while bounding worst-case payload
   amplification to a few KB instead of hundreds.
+
+OVERSIZED_PAYLOAD is deliberately smaller than `body_limit.MAX_BODY_BYTES`
+(pentest round 2, finding #3): that middleware now rejects any request
+body over 100KB with 413 before Pydantic ever runs, so a 500KB payload
+here would be caught by the body-size gate instead of by the field-level
+`max_length` these tests exist to verify. 10KB stays comfortably under
+that cap while still being 5x the largest `max_length` (2000).
 """
 
 from datetime import datetime, timedelta
@@ -28,7 +35,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
     from src.task_manager.models import User
 
-OVERSIZED_PAYLOAD = "A" * (500 * 1024)  # 500KB, matching the pentest's payload size
+OVERSIZED_PAYLOAD = "A" * (10 * 1024)  # 10KB: over every max_length, under MAX_BODY_BYTES
 
 
 @pytest.fixture(autouse=True)
@@ -60,7 +67,7 @@ def make_user(db_session, email="lengths@example.com"):
 
 
 def test_create_user_rejects_oversized_name(client):
-    """POST /api/users rejects a 500KB `name` with 422, not 201."""
+    """POST /api/users rejects a 10KB `name` with 422, not 201."""
     response = client.post(
         "/api/users", json={"name": OVERSIZED_PAYLOAD, "email": "big-name@example.com"}
     )
@@ -70,7 +77,7 @@ def test_create_user_rejects_oversized_name(client):
 
 def test_create_user_rejects_oversized_email(client):
     """POST /api/users rejects an absurdly long `email` with 422."""
-    huge_email = "a" * 500 * 1024 + "@example.com"
+    huge_email = "a" * (10 * 1024) + "@example.com"
 
     response = client.post("/api/users", json={"name": "Normal Name", "email": huge_email})
 
@@ -96,7 +103,7 @@ def test_create_user_rejects_name_one_over_boundary(client):
 
 
 def test_create_task_rejects_oversized_title(client, db_session):
-    """POST /api/tasks rejects a 500KB `title` with 422, not 201."""
+    """POST /api/tasks rejects a 10KB `title` with 422, not 201."""
     user = make_user(db_session)
     future_date = (datetime.utcnow() + timedelta(days=1)).isoformat()
 
@@ -113,7 +120,7 @@ def test_create_task_rejects_oversized_title(client, db_session):
 
 
 def test_create_task_rejects_oversized_description(client, db_session):
-    """POST /api/tasks rejects a 500KB `description` with 422, not 201."""
+    """POST /api/tasks rejects a 10KB `description` with 422, not 201."""
     user = make_user(db_session)
     future_date = (datetime.utcnow() + timedelta(days=1)).isoformat()
 
@@ -149,7 +156,7 @@ def test_create_task_accepts_description_at_boundary(client, db_session):
 
 
 def test_update_task_rejects_oversized_title(client, db_session):
-    """PUT /api/tasks/{id} rejects a 500KB `title` with 422."""
+    """PUT /api/tasks/{id} rejects a 10KB `title` with 422."""
     user = make_user(db_session)
     future_date = (datetime.utcnow() + timedelta(days=1)).isoformat()
     created = client.post(
@@ -164,7 +171,7 @@ def test_update_task_rejects_oversized_title(client, db_session):
 
 
 def test_update_task_rejects_oversized_description(client, db_session):
-    """PUT /api/tasks/{id} rejects a 500KB `description` with 422."""
+    """PUT /api/tasks/{id} rejects a 10KB `description` with 422."""
     user = make_user(db_session)
     future_date = (datetime.utcnow() + timedelta(days=1)).isoformat()
     created = client.post(

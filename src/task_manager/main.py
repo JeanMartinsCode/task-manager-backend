@@ -13,6 +13,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 try:
     from task_manager.api import notifications_router, status_router, tasks_router, users_router
+    from task_manager.body_limit import BodySizeLimitMiddleware
     from task_manager.rate_limit import limiter
     from task_manager.scheduler import create_scheduler
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
@@ -22,6 +23,7 @@ except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
         tasks_router,
         users_router,
     )
+    from src.task_manager.body_limit import BodySizeLimitMiddleware
     from src.task_manager.rate_limit import limiter
     from src.task_manager.scheduler import create_scheduler
 
@@ -48,6 +50,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(BodySizeLimitMiddleware)
 
 app.include_router(users_router)
 app.include_router(tasks_router)
