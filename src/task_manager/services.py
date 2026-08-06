@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 try:
@@ -37,7 +38,18 @@ class UserService:
 
         user = User(name=name, email=email)
         db.add(user)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError as exc:
+            # The check above is not atomic with the insert: under
+            # concurrent requests for the same email, more than one can
+            # pass the check before either commits. The database's real
+            # unique constraint is the actual source of truth here, and
+            # correctly rejects every insert after the first -- convert
+            # that into the same error the non-concurrent path raises,
+            # instead of letting it fall through to a 500.
+            db.rollback()
+            raise ValueError("email already exists") from exc
         db.refresh(user)
         return user
 
