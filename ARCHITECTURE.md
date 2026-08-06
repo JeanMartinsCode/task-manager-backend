@@ -76,12 +76,22 @@ Routers FastAPI finos — cada endpoint apenas valida entrada (via schema), cham
 
 | Decisão | Por quê |
 |---|---|
-| **SQLite** em vez de PostgreSQL | Zero setup, arquivo único, suficiente para o volume do MVP; a troca futura exige só mudar `DATABASE_URL` (o ORM já abstrai o dialeto) |
+| **SQLite** em vez de PostgreSQL | Zero setup, arquivo único, suficiente para o volume do MVP. `DATABASE_URL` já é lida do ambiente, mas trocar de backend também exige rever o `connect_args={"check_same_thread": False}` e o `StaticPool` em `database.py`, que são específicos de SQLite |
 | **APScheduler** em vez de Celery+Redis | Roda no mesmo processo da API, sem infraestrutura externa; adequado para um único job de baixa frequência |
 | **Camada de `services` separada da API** | Regra de negócio testável sem subir HTTP; os routers ficam finos e triviais |
 | **`StaticPool` no SQLAlchemy** | Necessário para compartilhar uma única conexão SQLite entre threads (API + scheduler rodando em paralelo) |
-| **Import de compatibilidade (`try: from task_manager.X / except: from src.task_manager.X`)** | Permite que os módulos sejam importados tanto como pacote instalado (`task_manager`) quanto via `src.task_manager` (como os testes fazem), sem duplicar código |
+| **Caminho de import único (`task_manager.X`), pacote sempre instalado** | Um único nome canônico para cada módulo. O padrão anterior de import duplo (`try: task_manager.X / except: src.task_manager.X`) permitia duas identidades para o mesmo arquivo e foi removido — ver "Identidade de módulo" abaixo |
 | **Estado da última escalação em memória** (não persistido) | Simples e suficiente para o MVP; é perdido em restart, o que é aceitável pois o job roda a cada minuto |
+
+## Identidade de módulo (import único)
+
+**Regra:** todo módulo é importado por um único caminho canônico — `task_manager.X` — em `src/`, nos testes, no `alembic/env.py` e no `Makefile`. O prefixo `src.task_manager.` não é usado em lugar nenhum, e o pacote é sempre instalado (`uv sync` / `pip install -e .`) em vez de rodado direto de um checkout cru.
+
+**Por que isso é uma regra e não um detalhe de estilo:** até então, cada módulo carregava um import de compatibilidade (`try: from task_manager.X / except ModuleNotFoundError: from src.task_manager.X`) que pretendia suportar os dois modos. Com o pacote instalado, o `try` passa a funcionar — mas quem alcançava o mesmo arquivo pelo caminho `src.task_manager.*` (testes, `alembic/env.py`) o carregava uma **segunda vez, sob outra identidade de módulo**. Como `database.py` cria seu `engine` no nível do módulo, o resultado eram duas engines e duas conexões `StaticPool` distintas para o mesmo arquivo SQLite, cada uma enxergando um estado diferente.
+
+Evidências concretas do problema, antes da correção: `issubclass(User, Base)` retornando `False` (duas hierarquias de classe para o mesmo modelo), um `PermissionError` do Windows ao tentar remover o arquivo do banco após `engine.dispose()` (outra conexão seguia aberta) e 29 dos 202 testes falhando sob `uv sync && alembic upgrade head && pytest`. O mesmo mecanismo ameaçava silenciosamente o `limiter` de `rate_limit.py` e o `_last_run_info` de `scheduler.py`, que também são estado de nível de módulo.
+
+**Guarda permanente:** `tests/test_module_identity.py` agrupa todas as entradas de `sys.modules` relacionadas a `task_manager` pelo caminho físico real do arquivo e falha se algum arquivo aparecer sob mais de um nome de módulo. Ele não procura pelo padrão `try/except` específico — verifica o invariante, então qualquer mecanismo futuro de duplicação (um `sys.path.insert` esquecido, um import de compatibilidade reintroduzido, um segundo registro de pacote) o dispara igual. O CI (`.github/workflows/ci.yml`) roda a suíte **contra o pacote instalado**, que é a condição sob a qual o bug se manifestava — rodar contra um checkout não instalado nunca o teria detectado.
 
 ## Autenticação e Autorização
 
