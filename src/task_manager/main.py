@@ -11,21 +11,10 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-try:
-    from task_manager.api import notifications_router, status_router, tasks_router, users_router
-    from task_manager.body_limit import BodySizeLimitMiddleware
-    from task_manager.rate_limit import limiter
-    from task_manager.scheduler import create_scheduler
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.api import (
-        notifications_router,
-        status_router,
-        tasks_router,
-        users_router,
-    )
-    from src.task_manager.body_limit import BodySizeLimitMiddleware
-    from src.task_manager.rate_limit import limiter
-    from src.task_manager.scheduler import create_scheduler
+from task_manager.api import notifications_router, status_router, tasks_router, users_router
+from task_manager.body_limit import BodySizeLimitMiddleware
+from task_manager.rate_limit import limiter
+from task_manager.scheduler import create_scheduler
 
 logger = logging.getLogger("task_manager")
 

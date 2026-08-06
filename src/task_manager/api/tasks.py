@@ -5,22 +5,13 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from sqlalchemy.orm import Session
 
-try:
-    from task_manager.constants import MAX_SQLITE_INTEGER
-    from task_manager.database import get_db
-    from task_manager.models import PriorityEnum, TaskStatusEnum
-    from task_manager.rate_limit import RATE_LIMIT_WRITE, limiter
-    from task_manager.schemas import PaginatedTaskResponse, TaskCreate, TaskRead, TaskUpdate
-    from task_manager.security import require_api_key
-    from task_manager.services import TaskService
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.constants import MAX_SQLITE_INTEGER
-    from src.task_manager.database import get_db
-    from src.task_manager.models import PriorityEnum, TaskStatusEnum
-    from src.task_manager.rate_limit import RATE_LIMIT_WRITE, limiter
-    from src.task_manager.schemas import PaginatedTaskResponse, TaskCreate, TaskRead, TaskUpdate
-    from src.task_manager.security import require_api_key
-    from src.task_manager.services import TaskService
+from task_manager.constants import MAX_SQLITE_INTEGER
+from task_manager.database import get_db
+from task_manager.models import PriorityEnum, TaskStatusEnum
+from task_manager.rate_limit import RATE_LIMIT_WRITE, limiter
+from task_manager.schemas import PaginatedTaskResponse, TaskCreate, TaskRead, TaskUpdate
+from task_manager.security import require_api_key
+from task_manager.services import TaskService
 
 router = APIRouter(
     prefix="/api/tasks", tags=["tasks"], dependencies=[Depends(require_api_key)]

@@ -6,12 +6,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-try:
-    from task_manager.constants import MAX_SQLITE_INTEGER
-    from task_manager.models import NotificationTypeEnum, PriorityEnum, TaskStatusEnum
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.constants import MAX_SQLITE_INTEGER
-    from src.task_manager.models import NotificationTypeEnum, PriorityEnum, TaskStatusEnum
+from task_manager.constants import MAX_SQLITE_INTEGER
+from task_manager.models import NotificationTypeEnum, PriorityEnum, TaskStatusEnum
 
 # Upper bounds on free-text fields, to close a payload-amplification DoS
 # (a client could otherwise send e.g. a 500KB `name` and it would be

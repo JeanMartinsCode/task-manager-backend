@@ -7,12 +7,8 @@ from datetime import datetime, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-try:
-    from task_manager.database import SessionLocal
-    from task_manager.services import EscalationService
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.database import SessionLocal
-    from src.task_manager.services import EscalationService
+from task_manager.database import SessionLocal
+from task_manager.services import EscalationService
 
 logger = logging.getLogger(__name__)
 

@@ -11,10 +11,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import relationship
 
-try:
-    from task_manager.database import Base
-except ModuleNotFoundError:  # pragma: no cover - compatibility for Alembic imports
-    from src.task_manager.database import Base
+from task_manager.database import Base
 
 
 class PriorityEnum(str, Enum):

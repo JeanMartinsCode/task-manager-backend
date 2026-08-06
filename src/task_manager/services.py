@@ -6,24 +6,14 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-try:
-    from task_manager.models import (
-        Notification,
-        NotificationTypeEnum,
-        PriorityEnum,
-        Task,
-        TaskStatusEnum,
-        User,
-    )
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import (
-        Notification,
-        NotificationTypeEnum,
-        PriorityEnum,
-        Task,
-        TaskStatusEnum,
-        User,
-    )
+from task_manager.models import (
+    Notification,
+    NotificationTypeEnum,
+    PriorityEnum,
+    Task,
+    TaskStatusEnum,
+    User,
+)
 
 
 class UserService:

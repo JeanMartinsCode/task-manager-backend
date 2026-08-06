@@ -5,18 +5,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-try:
-    from task_manager.constants import MAX_SQLITE_INTEGER
-    from task_manager.database import get_db
-    from task_manager.schemas import NotificationRead
-    from task_manager.security import require_api_key
-    from task_manager.services import NotificationService
-except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.constants import MAX_SQLITE_INTEGER
-    from src.task_manager.database import get_db
-    from src.task_manager.schemas import NotificationRead
-    from src.task_manager.security import require_api_key
-    from src.task_manager.services import NotificationService
+from task_manager.constants import MAX_SQLITE_INTEGER
+from task_manager.database import get_db
+from task_manager.schemas import NotificationRead
+from task_manager.security import require_api_key
+from task_manager.services import NotificationService
 
 router = APIRouter(
     prefix="/api/notifications",
