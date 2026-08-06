@@ -1,7 +1,7 @@
 """Pydantic schemas for API request/response validation."""
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -33,6 +33,25 @@ def _reject_null_bytes(v: Optional[str]) -> Optional[str]:
     """
     if v is not None and "\x00" in v:
         raise ValueError("must not contain null bytes")
+    return v
+
+
+def _normalize_deadline_to_utc(v: datetime) -> datetime:
+    """Normalize a deadline (naive or timezone-aware) to naive UTC.
+
+    Clients may send an ISO-8601 deadline with an explicit timezone (a "Z"
+    suffix or an offset like "+03:00" — exactly what JS's
+    `Date.toISOString()` produces), which Pydantic parses into an aware
+    `datetime`. Comparing that directly against `datetime.utcnow()` (naive)
+    raises `TypeError: can't compare offset-naive and offset-aware
+    datetimes`. Naive input is assumed to already be UTC — this codebase's
+    existing convention (`created_at`/`updated_at`, `EscalationService`) —
+    and is returned unchanged; aware input is converted to UTC and its
+    tzinfo stripped, so every deadline that reaches the database is
+    consistently naive-UTC and safe to compare against the rest of the app.
+    """
+    if v.tzinfo is not None:
+        return v.astimezone(timezone.utc).replace(tzinfo=None)
     return v
 
 
@@ -96,9 +115,10 @@ class TaskCreate(BaseModel):
     @classmethod
     def _validate_deadline(cls, v: datetime) -> datetime:
         """Validate that deadline is in the future."""
-        if v <= datetime.utcnow():
+        normalized = _normalize_deadline_to_utc(v)
+        if normalized <= datetime.utcnow():
             raise ValueError("deadline must be in the future")
-        return v
+        return normalized
 
 
 class TaskUpdate(BaseModel):
@@ -124,9 +144,12 @@ class TaskUpdate(BaseModel):
     @classmethod
     def _validate_deadline(cls, v: Optional[datetime]) -> Optional[datetime]:
         """Validate that deadline is in the future if provided."""
-        if v is not None and v <= datetime.utcnow():
+        if v is None:
+            return v
+        normalized = _normalize_deadline_to_utc(v)
+        if normalized <= datetime.utcnow():
             raise ValueError("deadline must be in the future")
-        return v
+        return normalized
 
 
 class TaskRead(BaseModel):
