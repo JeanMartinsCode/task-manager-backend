@@ -27,7 +27,7 @@ router = APIRouter(
 
 @router.get("", response_model=list[NotificationRead])
 def get_notifications(
-    skip: int = Query(0, ge=0),
+    skip: int = Query(0, ge=0, le=MAX_SQLITE_INTEGER),
     limit: int = Query(100, ge=1, le=100),
     task_id: Optional[int] = Query(None, ge=1, le=MAX_SQLITE_INTEGER),
     user_id: Optional[int] = Query(None, ge=1, le=MAX_SQLITE_INTEGER),

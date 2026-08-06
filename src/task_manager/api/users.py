@@ -36,7 +36,7 @@ def create_user(request: Request, user_in: UserCreate, db: Session = Depends(get
 
 @router.get("", response_model=list[UserRead])
 def get_all_users(
-    skip: int = Query(0, ge=0),
+    skip: int = Query(0, ge=0, le=MAX_SQLITE_INTEGER),
     limit: int = Query(100, ge=1, le=100),
     db: Session = Depends(get_db),
 ):

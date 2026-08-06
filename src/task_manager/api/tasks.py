@@ -47,7 +47,7 @@ def create_task(request: Request, task_in: TaskCreate, db: Session = Depends(get
 
 @router.get("", response_model=PaginatedTaskResponse)
 def get_all_tasks(
-    skip: int = Query(0, ge=0),
+    skip: int = Query(0, ge=0, le=MAX_SQLITE_INTEGER),
     limit: int = Query(100, ge=1, le=100),
     status: Optional[TaskStatusEnum] = Query(None),
     priority: Optional[PriorityEnum] = Query(None),
