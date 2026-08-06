@@ -2,13 +2,13 @@
 
 import pytest
 
-from src.task_manager.database import SessionLocal
-from src.task_manager.services import UserService
+from task_manager.database import SessionLocal
+from task_manager.services import UserService
 
 try:
     from task_manager.models import User
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import User
+    from task_manager.models import User
 
 
 @pytest.fixture

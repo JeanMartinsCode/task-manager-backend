@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from src.task_manager.main import app
+from task_manager.main import app
 
 
 class TestProjectStructure:

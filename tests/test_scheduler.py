@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import pytest
 from apscheduler.triggers.interval import IntervalTrigger
 
-from src.task_manager.database import SessionLocal
+from task_manager.database import SessionLocal
 
 try:
     from task_manager import scheduler as scheduler_module
@@ -20,15 +20,15 @@ try:
     )
     from task_manager.services import EscalationService
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager import scheduler as scheduler_module
-    from src.task_manager.models import Notification, PriorityEnum, Task, TaskStatusEnum, User
-    from src.task_manager.scheduler import (
+    from task_manager import scheduler as scheduler_module
+    from task_manager.models import Notification, PriorityEnum, Task, TaskStatusEnum, User
+    from task_manager.scheduler import (
         ESCALATION_JOB_ID,
         create_scheduler,
         get_last_run_info,
         run_escalation_job,
     )
-    from src.task_manager.services import EscalationService
+    from task_manager.services import EscalationService
 
 
 @pytest.fixture(autouse=True)

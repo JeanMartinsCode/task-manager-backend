@@ -11,12 +11,12 @@ uncaught `OverflowError`, surfacing as a generic 500 instead of a 422
 
 import pytest
 
-from src.task_manager.database import Base, engine
+from task_manager.database import Base, engine
 
 try:
     from task_manager.constants import MAX_SQLITE_INTEGER
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.constants import MAX_SQLITE_INTEGER
+    from task_manager.constants import MAX_SQLITE_INTEGER
 
 OVERFLOWING_SKIP = MAX_SQLITE_INTEGER + 1
 

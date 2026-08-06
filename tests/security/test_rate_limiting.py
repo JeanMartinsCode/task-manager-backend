@@ -19,7 +19,7 @@ other tests sharing the same in-process app/limiter singleton.
 
 import pytest
 
-from src.task_manager.database import Base, engine
+from task_manager.database import Base, engine
 
 
 @pytest.fixture(autouse=True)

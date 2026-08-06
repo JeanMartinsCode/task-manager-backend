@@ -9,8 +9,8 @@ try:
     from task_manager.models import NotificationTypeEnum
     from task_manager.schemas import NotificationRead
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import NotificationTypeEnum
-    from src.task_manager.schemas import NotificationRead
+    from task_manager.models import NotificationTypeEnum
+    from task_manager.schemas import NotificationRead
 
 
 class TestNotificationRead:

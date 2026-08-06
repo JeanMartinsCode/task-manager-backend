@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.task_manager.database import SessionLocal
+from task_manager.database import SessionLocal
 
 try:
     from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
     from task_manager.services import TaskService
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
-    from src.task_manager.services import TaskService
+    from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
+    from task_manager.services import TaskService
 
 
 @pytest.fixture

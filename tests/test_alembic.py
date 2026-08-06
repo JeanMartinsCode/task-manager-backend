@@ -2,6 +2,7 @@
 
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -77,7 +78,7 @@ class TestAlembicEnvConfiguration:
         content = env_py_path.read_text()
 
         assert (
-            "from src.task_manager.database import Base" in content
+            "from task_manager.database import Base" in content
         ), "env.py does not import Base from database module"
         assert (
             "target_metadata = Base.metadata" in content
@@ -88,7 +89,7 @@ class TestAlembicEnvConfiguration:
         # This is tricky because env.py is not a standard module
         # Instead, verify by running alembic command
         result = subprocess.run(
-            ["python", "-m", "alembic", "current"],
+            [sys.executable, "-m", "alembic", "current"],
             capture_output=True,
             text=True,
             cwd=Path.cwd(),
@@ -152,13 +153,13 @@ class TestAlembicMigrations:
         db_file = Path("task_manager.db")
         if db_file.exists():
             # Close all database connections before deleting
-            from src.task_manager.database import engine
+            from task_manager.database import engine
             engine.dispose()
             db_file.unlink()
 
         # Now upgrade to head
         result_upgrade = subprocess.run(
-            ["python", "-m", "alembic", "upgrade", "head"],
+            [sys.executable, "-m", "alembic", "upgrade", "head"],
             capture_output=True,
             text=True,
             cwd=Path.cwd(),
@@ -167,7 +168,7 @@ class TestAlembicMigrations:
         assert result_upgrade.returncode == 0, f"Migration upgrade failed: {result_upgrade.stderr}"
 
         # Verify alembic_version table exists in database
-        from src.task_manager.database import SessionLocal
+        from task_manager.database import SessionLocal
 
         session = SessionLocal()
         try:
@@ -183,11 +184,11 @@ class TestAlembicMigrations:
 
     def test_migration_creates_models_tables_and_indexes(self) -> None:
         """Verify the migration creates the expected model tables and indexes."""
-        from src.task_manager.database import SessionLocal, engine
+        from task_manager.database import SessionLocal, engine
 
         # Ensure migrations are applied to head
         result_upgrade = subprocess.run(
-            ["python", "-m", "alembic", "upgrade", "head"],
+            [sys.executable, "-m", "alembic", "upgrade", "head"],
             capture_output=True,
             text=True,
             cwd=Path.cwd(),

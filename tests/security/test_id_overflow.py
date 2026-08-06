@@ -21,13 +21,13 @@ from datetime import datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-from src.task_manager.database import Base, SessionLocal, engine
-from src.task_manager.main import app
+from task_manager.database import Base, SessionLocal, engine
+from task_manager.main import app
 
 try:
     from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
+    from task_manager.models import PriorityEnum, Task, TaskStatusEnum, User
 
 TEST_API_KEY = "test-api-key-for-pytest-only"
 
@@ -152,14 +152,10 @@ def test_unexpected_exception_returns_generic_500_with_error_id_no_internals(mon
     traceback) instead of returning the response an ASGI server would
     actually send in production; we need the real HTTP response here.
 
-    Patches `src.task_manager.services.TaskService` specifically (matching
-    how `app` itself is imported above) rather than the compatibility
-    `task_manager.services` alias: whichever import path resolves first
-    process-wide during the full test run can cache the two as distinct
-    module objects, and only the `src`-prefixed one is guaranteed to be
-    the class the running `app`'s routes actually call.
+    Patches `task_manager.services.TaskService` directly -- the single
+    canonical import path, matching how `app` itself is imported above.
     """
-    from src.task_manager.services import TaskService
+    from task_manager.services import TaskService
 
     def boom(*args, **kwargs):
         raise RuntimeError("credentials=supersecret db_path=/etc/prod.db")

@@ -5,8 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.task_manager.database import Base
-from src.task_manager import models  # noqa: F401
+from task_manager.database import Base
+from task_manager import models  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

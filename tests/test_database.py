@@ -24,14 +24,14 @@ class TestSQLAlchemySetup:
 
     def test_sqlalchemy_base_class_exists(self) -> None:
         """Verify SQLAlchemy Base class exists and is configured."""
-        from src.task_manager.database import Base
+        from task_manager.database import Base
 
         assert Base is not None, "Base class is None"
         assert hasattr(Base, "metadata"), "Base class missing metadata attribute"
 
     def test_session_local_factory_works(self) -> None:
         """Verify SessionLocal factory can create database sessions."""
-        from src.task_manager.database import SessionLocal
+        from task_manager.database import SessionLocal
 
         # Create a session
         session = SessionLocal()
@@ -42,7 +42,7 @@ class TestSQLAlchemySetup:
 
     def test_database_engine_configuration(self) -> None:
         """Verify SQLAlchemy engine is properly configured."""
-        from src.task_manager.database import engine
+        from task_manager.database import engine
 
         assert engine is not None, "Engine is None"
 
@@ -61,7 +61,7 @@ class TestDatabaseConnection:
 
     def test_database_connection_works(self) -> None:
         """Verify database connection is functional."""
-        from src.task_manager.database import Base, SessionLocal, engine
+        from task_manager.database import Base, SessionLocal, engine
 
         # Create all tables (they should be empty for now)
         Base.metadata.create_all(bind=engine)
@@ -84,7 +84,7 @@ class TestDatabaseConnection:
 
     def test_database_file_created(self) -> None:
         """Verify database file is created after connection."""
-        from src.task_manager.database import Base, engine
+        from task_manager.database import Base, engine
 
         # Create all tables (triggers DB file creation)
         Base.metadata.create_all(bind=engine)

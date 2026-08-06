@@ -5,12 +5,12 @@ This module validates that SQLAlchemy models are correctly defined with proper
 fields, types, constraints, and relationships.
 """
 
-from src.task_manager.database import Base
+from task_manager.database import Base
 
 try:
     from task_manager.models import Notification, Task, User
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import Notification, Task, User
+    from task_manager.models import Notification, Task, User
 
 
 class TestModelImports:

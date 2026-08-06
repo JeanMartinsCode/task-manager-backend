@@ -23,7 +23,7 @@ def client():
     """
     from fastapi.testclient import TestClient
 
-    from src.task_manager.main import app
+    from task_manager.main import app
 
     test_client = TestClient(app)
     test_client.headers.update({"X-API-Key": TEST_API_KEY})
@@ -39,7 +39,7 @@ def _reset_rate_limiter():
     without a reset each test would inherit the write-request count left
     behind by every test that ran before it.
     """
-    from src.task_manager.rate_limit import limiter
+    from task_manager.rate_limit import limiter
 
     limiter.reset()
     yield

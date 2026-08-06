@@ -9,8 +9,8 @@ try:
     from task_manager.models import PriorityEnum, TaskStatusEnum
     from task_manager.schemas import TaskCreate, TaskRead, TaskUpdate
 except ModuleNotFoundError:  # pragma: no cover - compatibility for imports
-    from src.task_manager.models import PriorityEnum, TaskStatusEnum
-    from src.task_manager.schemas import TaskCreate, TaskRead, TaskUpdate
+    from task_manager.models import PriorityEnum, TaskStatusEnum
+    from task_manager.schemas import TaskCreate, TaskRead, TaskUpdate
 
 
 class TestTaskCreate:
