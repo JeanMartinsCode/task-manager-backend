@@ -207,4 +207,4 @@ Desenvolvido em TDD, fase a fase:
 
 ## 📄 Licença
 
-Business Source License 1.1 (BSL 1.1) — uso comercial requer licença comercial. Uso pessoal, educacional e avaliação por recrutadores é gratuito.
+MIT License.
