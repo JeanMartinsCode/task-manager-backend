@@ -1,6 +1,6 @@
 """Service layer for user-related and task-related operations."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy.exc import IntegrityError
@@ -181,7 +181,7 @@ class EscalationService:
 
         Returns the number of tasks escalated in this run.
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         threshold = now + timedelta(hours=EscalationService.ESCALATION_WINDOW_HOURS)
 
         candidates = (
