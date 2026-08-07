@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/JeanMartinsCode/task-manager-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/JeanMartinsCode/task-manager-backend/actions/workflows/ci.yml)
 
+📫 **Contato:** [LinkedIn](https://www.linkedin.com/in/jean-martins-dev)
+
 API REST em Python que gerencia tarefas e **escalona automaticamente a prioridade** de tarefas cujo prazo está se esgotando, sem depender de intervenção manual.
 
 ## 💡 Problema
